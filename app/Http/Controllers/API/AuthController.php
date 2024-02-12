@@ -85,6 +85,7 @@ class AuthController extends Controller
      */
     private function customResponseData(User $user, $token): array
     {
+        $user->auth = true;
         return [
             'user' => new UserResource($user),
             'token' => $token

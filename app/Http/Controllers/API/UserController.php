@@ -7,6 +7,7 @@ use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\User;
 use App\Http\Requests\UserUpdateRequest;
+use App\Http\Resources\UserCollection;
 use \Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
@@ -21,7 +22,7 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
         $users = User::all();
 
-        return $this->successResponse('Successful request', ['users' => $users]);
+        return $this->successResponse('Successful request', ['users' => new UserCollection($users)]);
     }
 
     /**
