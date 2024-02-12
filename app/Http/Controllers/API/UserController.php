@@ -74,4 +74,20 @@ class UserController extends Controller
             return $this->errorResponse('User not found', 404);
         }
     }
+
+    /**
+     * Get logged in user
+     */
+    public function authUser(): JsonResponse
+    {
+        try {
+            $user = auth()->user();
+            $user->auth = true;
+
+            return $this->successResponse('Successfull request', ['user' => new UserResource($user)]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+
+            return $this->errorResponse('User not found', 404);
+        }
+    }
 }
