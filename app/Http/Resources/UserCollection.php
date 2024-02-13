@@ -13,12 +13,25 @@ class UserCollection extends ResourceCollection
      *
      * @return array<int|string, mixed>
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
-            'data' => $this->collection->map(function ($user) {
-                return new UserResource($user);
-            }),
+            'data' => UserResource::collection($this->collection),
+            'links' => [
+                'first' => $this->url(1),
+                'last' => $this->url($this->lastPage()),
+                'prev' => $this->previousPageUrl(),
+                'next' => $this->nextPageUrl(),
+            ],
+            'meta' => [
+                'current_page' => $this->currentPage(),
+                'from' => $this->firstItem(),
+                'last_page' => $this->lastPage(),
+                'path' => $this->url($this->currentPage()),
+                'per_page' => $this->perPage(),
+                'to' => $this->lastItem(),
+                'total' => $this->total(),
+            ],
         ];
     }
 }

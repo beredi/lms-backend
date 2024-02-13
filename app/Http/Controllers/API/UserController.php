@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserCollection;
 use \Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -17,12 +18,14 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', User::class);
-        $users = User::all();
+        $perPage = $request->input('per_page', 10);
+        $users = User::paginate($perPage);
 
-        return $this->successResponse('Successful request', ['users' => new UserCollection($users)]);
+
+        return $this->successResponse('Successful request', new UserCollection($users));
     }
 
     /**
