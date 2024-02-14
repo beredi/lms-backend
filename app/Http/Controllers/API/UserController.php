@@ -82,6 +82,10 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
             $this->authorize('update', $user);
+            if ($request->input('roles')) {
+                $roles = $request->input('roles');
+                $user->syncRoles($roles);
+            }
 
             $user->update($request->validated());
 
