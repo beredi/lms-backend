@@ -27,8 +27,10 @@ class BookStoreRequest extends FormRequest
             'pages' => 'nullable|integer',
             'year' => 'nullable|integer',
             'authors' => 'array|required',
+            'categories' => 'array|required',
             'book_id' => 'required|integer|unique:books',
-            'authors.*' => 'exists:authors,id', // Assuming authors table has an 'id' column
+            'authors.*' => 'exists:authors,id',
+            'categories.*' => 'exists:categories,id',
         ];
     }
 }

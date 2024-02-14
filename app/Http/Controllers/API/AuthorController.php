@@ -32,7 +32,7 @@ class AuthorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(AuthorStoreRequest $request)
+    public function store(AuthorStoreRequest $request): JsonResponse
     {
         $this->authorize('create', Author::class);
 
@@ -52,7 +52,7 @@ class AuthorController extends Controller
         try {
             $author = Author::findOrFail($id);
             $author->load('books');
-            return $this->successResponse('Success request', ['user' => new AuthorResource($author)]);
+            return $this->successResponse('Success request', ['author' => new AuthorResource($author)]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Author not found', 404);
         }
@@ -61,7 +61,7 @@ class AuthorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(AuthorStoreRequest $request, string $id)
+    public function update(AuthorStoreRequest $request, string $id): JsonResponse
     {
         try {
             $author = Author::findOrFail($id);
@@ -69,7 +69,7 @@ class AuthorController extends Controller
 
             $author->update($request->validated());
 
-            return $this->successResponse('Author updated successfully', ['user' => new AuthorResource($author)]);
+            return $this->successResponse('Author updated successfully', ['author' => new AuthorResource($author)]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Author not found', 404);
         }
@@ -78,7 +78,7 @@ class AuthorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
         try {
             $author = Author::findOrFail($id);

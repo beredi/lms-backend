@@ -54,6 +54,14 @@ class Book extends Model
     }
 
     /**
+     * Book has many categories
+     */
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'books_categories',  'book_id', 'category_id');
+    }
+
+    /**
      * Field for full-text search
      */
     #[SearchUsingPrefix(['book_id'])]

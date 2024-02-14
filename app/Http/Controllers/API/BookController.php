@@ -25,7 +25,7 @@ class BookController extends Controller
         $search = $request->input('search');
 
         $books = Book::search($search)->paginate($perPage);
-        $books->load('authors');
+        $books->load(['authors', 'categories']);
 
         return $this->successResponse('Successful request', new BookCollection($books));
     }
@@ -52,8 +52,8 @@ class BookController extends Controller
     {
         try {
             $book = Book::findOrFail($id);
-            $book->load('authors');
-            return $this->successResponse('Success request', ['user' => new BookResource($book)]);
+            $book->load(['authors', 'categories']);
+            return $this->successResponse('Success request', ['book' => new BookResource($book)]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Book not found', 404);
         }
@@ -69,12 +69,16 @@ class BookController extends Controller
             $this->authorize('update', $book);
 
             $book->update($request->validated());
-            if ($request->validated()['authors']) {
+            if ($request->input('authors')) {
                 $book->authors()->sync($request->validated()['authors']);
             }
 
-            $book->load('authors');
-            return $this->successResponse('Book updated successfully', ['user' => new BookResource($book)]);
+            if ($request->input('categories')) {
+                $book->categories()->sync($request->validated()['categories']);
+            }
+
+            $book->load(['authors', 'categories']);
+            return $this->successResponse('Book updated successfully', ['book' => new BookResource($book)]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Book not found', 404);
         }

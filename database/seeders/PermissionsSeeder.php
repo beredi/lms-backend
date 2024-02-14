@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Author;
 use App\Models\Book;
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -20,19 +21,22 @@ class PermissionsSeeder extends Seeder
         $userPermissions = User::getModelPermissions();
         $authorPermissions = Author::getModelPermissions();
         $bookPermissions = Book::getModelPermissions();
-        $permissions = array_merge($userPermissions, $authorPermissions, $bookPermissions);
+        $categoryPermissions = Category::getModelPermissions();
+        $permissions = array_merge($userPermissions, $authorPermissions, $bookPermissions, $categoryPermissions);
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            //Permission::create(['name' => $permission]);
         }
 
-        $employerPermissions = array_merge($userPermissions, $authorPermissions, $bookPermissions);
+        $employerPermissions = array_merge($userPermissions, $authorPermissions, $bookPermissions, $categoryPermissions);
         Role::findByName('employer')->syncPermissions($employerPermissions);
 
         $userPermissions = [
-            $authorPermissions['VIEW_AUTHOR'],
-            $authorPermissions['VIEW_AUTHORS'],
-            $bookPermissions['VIEW_BOOKS'],
-            $bookPermissions['VIEW_BOOK']
+            'VIEW_AUTHOR',
+            'VIEW_AUTHORS',
+            'VIEW_BOOKS',
+            'VIEW_BOOK',
+            'VIEW_CATEGORY',
+            'VIEW_CATEGORIES',
         ];
         Role::findByName('user')->syncPermissions($employerPermissions);
     }

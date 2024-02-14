@@ -2,18 +2,17 @@
 
 namespace App\Policies;
 
-use App\Models\Author;
+use App\Models\Category;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
-class AuthorPolicy
+class CategoryPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('VIEW_AUTHORS');
+        return $user->hasPermissionTo('VIEW_CATEGORIES');
     }
 
     /**
@@ -21,7 +20,7 @@ class AuthorPolicy
      */
     public function view(User $user): bool
     {
-        return $user->hasPermissionTo('VIEW_AUTHOR');
+        return $user->hasPermissionTo('VIEW_CATEGORY');
     }
 
     /**
@@ -29,7 +28,7 @@ class AuthorPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('CREATE_AUTHOR');
+        return $user->hasPermissionTo('CREATE_CATEGORY');
     }
 
     /**
@@ -37,7 +36,7 @@ class AuthorPolicy
      */
     public function update(User $user): bool
     {
-        return $user->hasPermissionTo('EDIT_AUTHOR');
+        return $user->hasPermissionTo('EDIT_CATEGORY');
     }
 
     /**
@@ -45,13 +44,13 @@ class AuthorPolicy
      */
     public function delete(User $user): bool
     {
-        return $user->hasPermissionTo('DELETE_AUTHOR');
+        return $user->hasPermissionTo('DELETE_CATEGORY');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Author $author): bool
+    public function restore(User $user, Category $category): bool
     {
         //
     }
@@ -59,7 +58,7 @@ class AuthorPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Author $author): bool
+    public function forceDelete(User $user, Category $category): bool
     {
         //
     }
