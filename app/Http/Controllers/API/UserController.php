@@ -23,7 +23,9 @@ class UserController extends Controller
     {
         $this->authorize('viewAny', User::class);
         $perPage = $request->input('per_page', 10);
-        $users = User::paginate($perPage);
+        $search = $request->input('search');
+
+        $search ? $users = User::search($search)->paginate($perPage) : $users = User::paginate($perPage);
 
 
         return $this->successResponse('Successful request', new UserCollection($users));
