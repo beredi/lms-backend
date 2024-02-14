@@ -17,19 +17,19 @@ class UserCollection extends ResourceCollection
     {
         return [
             'data' => UserResource::collection($this->collection),
-            'links' => [
+            /*'links' => [
                 'first' => $this->url(1),
                 'last' => $this->url($this->lastPage()),
                 'prev' => $this->previousPageUrl(),
                 'next' => $this->nextPageUrl(),
-            ],
+            ],*/
             'meta' => [
                 'current_page' => $this->currentPage(),
-                'from' => $this->firstItem(),
+                //'from' => $this->firstItem(),
                 'last_page' => $this->lastPage(),
-                'path' => $this->url($this->currentPage()),
-                'per_page' => $this->perPage(),
-                'to' => $this->lastItem(),
+                //'path' => $this->url($this->currentPage()),
+                //'per_page' => $this->perPage(),
+                //'to' => $this->lastItem(),
                 'total' => $this->total(),
             ],
         ];

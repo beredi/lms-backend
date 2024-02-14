@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\User;
@@ -42,6 +43,33 @@ class UserController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('User not found', 404);
         }
+    }
+
+    /**
+     *
+     */
+    public function store(RegisterRequest $request): JsonResponse
+    {
+        $this->authorize('create', User::class);
+
+        $user = User::create([
+            'name' => $request->input('name'),
+            'lastname' => $request->input('name'),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'address' => $request->input('address'),
+            'password' => bcrypt($request->input('password')),
+        ]);
+
+        $roles = $request->input('roles', ['user']);
+        $user->syncRoles($roles);
+
+
+        return $this->successResponse(
+            'User created successfully',
+            $user,
+            201
+        );
     }
 
     /**
