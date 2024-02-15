@@ -10,6 +10,7 @@ use App\Http\Requests\BookUpdateRequest;
 use App\Http\Resources\BookCollection;
 use App\Http\Resources\BookResource;
 use App\Http\Traits\ApiResponseTrait;
+use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 
 class BookController extends Controller
@@ -24,7 +25,13 @@ class BookController extends Controller
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
 
-        $books = Book::search($search)->paginate($perPage);
+        $books = Book::where('title', 'like', "%{$search}%")
+            ->orWhere('book_id', 'like', "test%")
+            ->orWhereHas('authors', function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->paginate($perPage);
+
         $books->load(['authors', 'categories']);
 
         return $this->successResponse('Successful request', new BookCollection($books));
@@ -97,6 +104,33 @@ class BookController extends Controller
             return $this->successResponse('Book has been removed', []);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Book not found', 404);
+        }
+    }
+
+    public function getByCategory(Request $request, $categoryId): JsonResponse
+    {
+        try {
+            $category = Category::findOrFail($categoryId);
+
+            $perPage = $request->input('per_page', 10);
+            $search = $request->input('search');
+
+            $books = Book::with(['authors', 'categories'])
+                ->where(function ($query) use ($search, $categoryId) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('book_id', 'like', "test%")
+                        ->orWhereHas('authors', function ($query) use ($search) {
+                            $query->where('name', 'like', "%{$search}%");
+                        });
+                })
+                ->whereHas('categories', function ($query) use ($categoryId) {
+                    $query->where('id', $categoryId);
+                })
+                ->paginate($perPage);
+
+            return $this->successResponse('Successful request', ['books' => new BookCollection($books), 'category' => $category]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+            return $this->errorResponse('Category not found', 404);
         }
     }
 }

@@ -67,9 +67,14 @@ class Book extends Model
     #[SearchUsingPrefix(['book_id'])]
     public function toSearchableArray(): array
     {
+        $this->load('authors'); // Ensure authors are loaded
+
+        $authors = $this->authors->pluck('name')->toArray(); // Get author names
+
         return [
             'book_id' => $this->book_id,
             'title' => $this->title,
+            // 'authors' => $authors, // Include authors in the searchable data
         ];
     }
 }
