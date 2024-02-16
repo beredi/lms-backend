@@ -19,13 +19,21 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 10);
-        $search = $request->input('search');
+        $result = null;
+        if ($request->input('get_all') && $request->input('get_all') == 1) {
+            $result = Category::all();
+        } else {
+            $perPage = $request->input('per_page', 10);
+            $search = $request->input('search');
 
-        $categories = Category::search($search)->paginate($perPage);
-        $categories->load('books');
+            $categories = Category::search($search)
+                ->orderBy('name', 'asc')
+                ->paginate($perPage);
+            $categories->load('books');
+            $result = new CategoryCollection($categories);
+        }
 
-        return $this->successResponse('Successful request', new CategoryCollection($categories));
+        return $this->successResponse('Successful request', $result);
     }
 
     /**
@@ -37,10 +45,10 @@ class CategoryController extends Controller
 
 
         $validatedData = $request->validated();
-        Category::create($validatedData);
+        $category = Category::create($validatedData);
 
 
-        return $this->successResponse('Category created successfully', null, 201);
+        return $this->successResponse('Category created successfully', new CategoryResource($category), 201);
     }
 
     /**

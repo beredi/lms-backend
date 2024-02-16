@@ -9,6 +9,7 @@ Route::prefix('books')->group(function () {
     Route::get('/', [BookController::class, 'index']);
     Route::get('/{id}', [BookController::class, 'show']);
     Route::get('/category/{categoryId}', [BookController::class, 'getByCategory']);
+    Route::get('/author/{authorId}', [BookController::class, 'getByAuthor']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [BookController::class, 'store']);

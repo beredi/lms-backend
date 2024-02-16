@@ -38,6 +38,6 @@ class PermissionsSeeder extends Seeder
             'VIEW_CATEGORY',
             'VIEW_CATEGORIES',
         ];
-        Role::findByName('user')->syncPermissions($employerPermissions);
+        Role::findByName('user')->syncPermissions($userPermissions);
     }
 }

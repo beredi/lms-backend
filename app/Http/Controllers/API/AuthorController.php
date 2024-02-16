@@ -20,13 +20,19 @@ class AuthorController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 10);
-        $search = $request->input('search');
+        $result = null;
+        if ($request->input('get_all') && $request->input('get_all') == 1) {
+            $result = Author::all();
+        } else {
+            $perPage = $request->input('per_page', 10);
+            $search = $request->input('search');
 
-        $authors = Author::search($search)->paginate($perPage);
-        $authors->load('books');
+            $authors = Author::search($search)->paginate($perPage);
+            $authors->load('books');
+            $result = new AuthorCollection($authors);
+        }
 
-        return $this->successResponse('Successful request', new AuthorCollection($authors));
+        return $this->successResponse('Successful request', $result);
     }
 
     /**
@@ -38,10 +44,10 @@ class AuthorController extends Controller
 
 
         $validatedData = $request->validated();
-        Author::create($validatedData);
+        $author = Author::create($validatedData);
 
 
-        return $this->successResponse('Author created successfully', null, 201);
+        return $this->successResponse('Author created successfully', new AuthorResource($author), 201);
     }
 
     /**

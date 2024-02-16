@@ -10,6 +10,7 @@ use App\Http\Requests\BookUpdateRequest;
 use App\Http\Resources\BookCollection;
 use App\Http\Resources\BookResource;
 use App\Http\Traits\ApiResponseTrait;
+use App\Models\Author;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 
@@ -48,8 +49,9 @@ class BookController extends Controller
         $book = Book::create($validatedData);
 
         $book->authors()->sync($validatedData['authors']);
+        $book->categories()->sync($validatedData['categories']);
 
-        return $this->successResponse('Book created successfully', null, 201);
+        return $this->successResponse('Book created successfully', new BookResource($book), 201);
     }
 
     /**
@@ -131,6 +133,30 @@ class BookController extends Controller
             return $this->successResponse('Successful request', ['books' => new BookCollection($books), 'category' => $category]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Category not found', 404);
+        }
+    }
+
+    public function getByAuthor(Request $request, $authorId): JsonResponse
+    {
+        try {
+            $author = Author::findOrFail($authorId);
+
+            $perPage = $request->input('per_page', 10);
+            $search = $request->input('search');
+
+            $books = Book::with(['authors', 'categories'])
+                ->where(function ($query) use ($search, $authorId) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('book_id', 'like', "test%");
+                })
+                ->whereHas('authors', function ($query) use ($authorId) {
+                    $query->where('authors.id', $authorId);
+                })
+                ->paginate($perPage);
+
+            return $this->successResponse('Successful request', ['books' => new BookCollection($books), 'author' => $author]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+            return $this->errorResponse('Author not found', 404);
         }
     }
 }
