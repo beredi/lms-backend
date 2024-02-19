@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Attributes\SearchUsingPrefix;
 use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Borrow;
 
 class User extends Authenticatable
 {
@@ -89,5 +90,10 @@ class User extends Authenticatable
             'lastname' => $this->lastname,
             'email' => $this->email,
         ];
+    }
+
+    public function borrows()
+    {
+        return $this->hasMany(Borrow::class);
     }
 }

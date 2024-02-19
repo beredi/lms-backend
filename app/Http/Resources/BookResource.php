@@ -21,6 +21,7 @@ class BookResource extends JsonResource
             'description' => $this->description,
             'pages' => $this->pages,
             'year' => $this->year,
+            'status' => $this->getStatus(),
             'authors' => AuthorResource::collection($this->whenLoaded('authors')),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
         ];

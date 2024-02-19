@@ -27,7 +27,7 @@ class BookStoreRequest extends FormRequest
             'pages' => 'nullable|integer',
             'year' => 'nullable|integer',
             'authors' => 'array|required',
-            'categories' => 'array|required',
+            'categories' => 'sometimes|array',
             'book_id' => 'required|integer|unique:books',
             'authors.*' => 'exists:authors,id',
             'categories.*' => 'exists:categories,id',

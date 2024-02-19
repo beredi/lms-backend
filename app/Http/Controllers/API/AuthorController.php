@@ -27,7 +27,7 @@ class AuthorController extends Controller
             $perPage = $request->input('per_page', 10);
             $search = $request->input('search');
 
-            $authors = Author::search($search)->paginate($perPage);
+            $authors = Author::search($search)->orderBy('name', 'asc')->paginate($perPage);
             $authors->load('books');
             $result = new AuthorCollection($authors);
         }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
 use App\Models\Author;
+use App\Models\Borrow;
 use Laravel\Scout\Attributes\SearchUsingPrefix;
 
 class Book extends Model
@@ -76,5 +77,31 @@ class Book extends Model
             'title' => $this->title,
             // 'authors' => $authors, // Include authors in the searchable data
         ];
+    }
+
+    public function borrows()
+    {
+        return $this->hasMany(Borrow::class);
+    }
+
+    public function getStatus(): string
+    {
+        $borrowed = $this->borrows()
+            ->whereNull('returned')
+            ->whereNotNull('borrowed')
+            ->count();
+
+        $reserved = $this->borrows()
+            ->whereNull('returned')
+            ->whereNull('borrowed')
+            ->count();
+
+        if ($borrowed > 0) {
+            return 'Borrowed';
+        } elseif ($reserved > 0) {
+            return 'Reserved';
+        } else {
+            return 'Available';
+        }
     }
 }

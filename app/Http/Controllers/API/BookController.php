@@ -13,6 +13,7 @@ use App\Http\Traits\ApiResponseTrait;
 use App\Models\Author;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -25,14 +26,30 @@ class BookController extends Controller
     {
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
+        $available = $request->input('available', null);
 
-        $books = Book::where('title', 'like', "%{$search}%")
-            ->orWhere('book_id', 'like', "test%")
-            ->orWhereHas('authors', function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->paginate($perPage);
+        $query = Book::query();
 
+        if ($available === '1') {
+            $query->where(function ($query) {
+                $query->doesntHave('borrows')
+                    ->orWhereHas('borrows', function ($q) {
+                        $q->whereNotNull('returned');
+                    });
+            });
+        }
+
+        $query->where(function ($query) use ($search) {
+            $query->where('title', 'like', "%{$search}%")
+                ->orWhere('book_id', 'like', "test%")
+                ->orWhereHas('authors', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                });
+        });
+
+        $query->orderBy('id', 'desc');
+
+        $books = $query->paginate($perPage);
         $books->load(['authors', 'categories']);
 
         return $this->successResponse('Successful request', new BookCollection($books));
@@ -41,18 +58,25 @@ class BookController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(BookStoreRequest $request)
+    public function store(BookStoreRequest $request): JsonResponse
     {
         $this->authorize('create', Book::class);
 
         $validatedData = $request->validated();
         $book = Book::create($validatedData);
 
-        $book->authors()->sync($validatedData['authors']);
-        $book->categories()->sync($validatedData['categories']);
+        if (isset($validatedData['authors'])) {
+            $book->authors()->sync($validatedData['authors']);
+        }
+
+        // Check if 'categories' key exists in $validatedData before trying to access it
+        if (isset($validatedData['categories'])) {
+            $book->categories()->sync($validatedData['categories']);
+        }
 
         return $this->successResponse('Book created successfully', new BookResource($book), 201);
     }
+
 
     /**
      * Display the specified resource.
@@ -116,8 +140,20 @@ class BookController extends Controller
 
             $perPage = $request->input('per_page', 10);
             $search = $request->input('search');
+            $available = $request->input('available');
 
-            $books = Book::with(['authors', 'categories'])
+            $query = Book::query();
+            if ($available === '1') {
+                $query->where(function ($query) {
+                    $query->doesntHave('borrows')
+                        ->orWhereHas('borrows', function ($q) {
+                            $q->whereNotNull('returned');
+                        });
+                });
+            }
+
+
+            $query->with(['authors', 'categories'])
                 ->where(function ($query) use ($search, $categoryId) {
                     $query->where('title', 'like', "%{$search}%")
                         ->orWhere('book_id', 'like', "test%")
@@ -127,8 +163,9 @@ class BookController extends Controller
                 })
                 ->whereHas('categories', function ($query) use ($categoryId) {
                     $query->where('id', $categoryId);
-                })
-                ->paginate($perPage);
+                });
+
+            $books = $query->paginate($perPage);
 
             return $this->successResponse('Successful request', ['books' => new BookCollection($books), 'category' => $category]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
@@ -143,16 +180,28 @@ class BookController extends Controller
 
             $perPage = $request->input('per_page', 10);
             $search = $request->input('search');
+            $available = $request->input('available');
 
-            $books = Book::with(['authors', 'categories'])
+            $query = Book::query();
+            if ($available === '1') {
+                $query->where(function ($query) {
+                    $query->doesntHave('borrows')
+                        ->orWhereHas('borrows', function ($q) {
+                            $q->whereNotNull('returned');
+                        });
+                });
+            }
+
+            $query->with(['authors', 'categories'])
                 ->where(function ($query) use ($search, $authorId) {
                     $query->where('title', 'like', "%{$search}%")
                         ->orWhere('book_id', 'like', "test%");
                 })
                 ->whereHas('authors', function ($query) use ($authorId) {
                     $query->where('authors.id', $authorId);
-                })
-                ->paginate($perPage);
+                });
+
+            $books = $query->paginate($perPage);
 
             return $this->successResponse('Successful request', ['books' => new BookCollection($books), 'author' => $author]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {

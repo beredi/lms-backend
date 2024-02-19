@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AuthorController;
 use App\Http\Controllers\API\BookController;
+use App\Http\Controllers\API\BorrowController;
 use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,10 @@ Route::prefix('books')->group(function () {
         Route::post('/', [BookController::class, 'store']);
         Route::put('/{id}', [BookController::class, 'update']);
         Route::delete('/{id}', [BookController::class, 'destroy']);
+        Route::post('/reserve', [BorrowController::class, 'reserveBook']);
+        Route::post('/borrow', [BorrowController::class, 'borrowBook']);
+        Route::post('/return', [BorrowController::class, 'returnBook']);
+        Route::get('/return-by-id/{borrowId}', [BorrowController::class, 'returnById']);
     });
 });
 
