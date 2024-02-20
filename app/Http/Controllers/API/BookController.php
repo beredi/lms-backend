@@ -9,8 +9,10 @@ use App\Http\Requests\BookStoreRequest;
 use App\Http\Requests\BookUpdateRequest;
 use App\Http\Resources\BookCollection;
 use App\Http\Resources\BookResource;
+use App\Http\Resources\BorrowCollection;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\Author;
+use App\Models\Borrow;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +36,12 @@ class BookController extends Controller
             $query->where(function ($query) {
                 $query->doesntHave('borrows')
                     ->orWhereHas('borrows', function ($q) {
-                        $q->whereNotNull('returned');
+                        $q->where('returned', '!=', null)
+                            ->where('id', function ($subquery) {
+                                $subquery->selectRaw('MAX(id)')
+                                    ->from('borrows')
+                                    ->whereColumn('book_id', 'books.id');
+                            });
                     });
             });
         }
@@ -206,6 +213,37 @@ class BookController extends Controller
             return $this->successResponse('Successful request', ['books' => new BookCollection($books), 'author' => $author]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Author not found', 404);
+        }
+    }
+
+    /**
+     *
+     */
+    public function getBorrowsByBook(Request $request, $bookId): JsonResponse
+    {
+        try {
+            $book = Book::findOrFail($bookId);
+            $perPage = $request->input('per_page', 10);
+            $status = $request->input('status', 'returned');
+
+            switch ($status) {
+                case 'returned':
+                    $borrows = $book->getReturned();
+                    break;
+
+                case 'borrowed':
+                    $borrows = $book->getBorrowed();
+                    break;
+
+                default:
+                    $borrows = $book->getReserved();
+                    break;
+            }
+
+
+            return $this->successResponse('Successful request', new BorrowCollection($borrows->with(['user', 'book'])->paginate($perPage)));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+            return $this->errorResponse('Borrow record not found', 404);
         }
     }
 }

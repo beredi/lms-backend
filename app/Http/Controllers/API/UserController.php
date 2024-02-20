@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\User;
 use App\Http\Requests\UserUpdateRequest;
+use App\Http\Resources\BorrowCollection;
 use App\Http\Resources\UserCollection;
 use \Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -125,6 +126,37 @@ class UserController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
 
             return $this->errorResponse('User not found', 404);
+        }
+    }
+
+    /**
+     *
+     */
+    public function getBorrowsByUser(Request $request, $userId): JsonResponse
+    {
+        try {
+            $user = User::findOrFail($userId);
+            $perPage = $request->input('per_page', 10);
+            $status = $request->input('status', 'returned');
+
+            switch ($status) {
+                case 'returned':
+                    $borrows = $user->getReturnedBooks();
+                    break;
+
+                case 'borrowed':
+                    $borrows = $user->getBorrowedBooks();
+                    break;
+
+                default:
+                    $borrows = $user->getReservedBooks();
+                    break;
+            }
+
+
+            return $this->successResponse('Successful request', new BorrowCollection($borrows->with(['user', 'book'])->orderBy('returned', 'desc')->paginate($perPage)));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+            return $this->errorResponse('Borrow record not found', 404);
         }
     }
 }

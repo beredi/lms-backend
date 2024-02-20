@@ -79,11 +79,17 @@ class Book extends Model
         ];
     }
 
+    /**
+     *
+     */
     public function borrows()
     {
         return $this->hasMany(Borrow::class);
     }
 
+    /**
+     * @return string
+     */
     public function getStatus(): string
     {
         $borrowed = $this->borrows()
@@ -103,5 +109,48 @@ class Book extends Model
         } else {
             return 'Available';
         }
+    }
+
+
+
+    /**
+     * Get only reserved re.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function getReserved()
+    {
+        return $this->borrows()
+            ->whereNull('returned')
+            ->whereNull('borrowed');
+    }
+
+
+
+    /**
+     * Get only borrowed records.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function getBorrowed()
+    {
+        return $this->borrows()
+            ->whereNull('returned')
+            ->whereNotNull('borrowed');
+    }
+
+
+
+
+
+    /**
+     * Get only returned records.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function getReturned()
+    {
+        return $this->borrows()
+            ->whereNotNull('returned');
     }
 }

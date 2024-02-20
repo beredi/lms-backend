@@ -92,8 +92,48 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     *
+     */
     public function borrows()
     {
         return $this->hasMany(Borrow::class);
+    }
+
+
+
+    /**
+     * Get only reserved books for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function getReservedBooks()
+    {
+        return $this->borrows()
+            ->whereNull('returned')
+            ->whereNull('borrowed');
+    }
+
+    /**
+     * Get only borrowed books for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function getBorrowedBooks()
+    {
+        return $this->borrows()
+            ->whereNull('returned')
+            ->whereNotNull('borrowed');
+    }
+
+    /**
+     * Get only returned books for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function getReturnedBooks()
+    {
+        return $this->borrows()
+            ->whereNotNull('returned');
     }
 }

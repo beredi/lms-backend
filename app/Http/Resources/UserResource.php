@@ -22,6 +22,9 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'address' => $this->address,
             'roles' => $this->getRoleNames(),
+            'reserved_books_count' => $this->getReservedBooks->count(),
+            'borrowed_books_count' => $this->getBorrowedBooks->count(),
+            'returned_books_count' => $this->getReturnedBooks->count(),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'permissions' => $this->when($this->auth, function () {

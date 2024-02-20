@@ -20,6 +20,27 @@ class Borrow extends Model
         'deadline',
     ];
 
+
+    /**
+     * Permissions for User
+     */
+    private static $permissons = [
+        'VIEW_BORROW' => 'VIEW_BORROW',
+        'VIEW_BORROWS' => 'VIEW_BORROWS',
+        'CREATE_BORROW' => 'CREATE_BORROW',
+        'EDIT_BORROW' => 'EDIT_BORROW',
+        'DELETE_BORROW' => 'DELETE_BORROW'
+    ];
+
+    /**
+     * Get permissions for model
+     * @return array
+     */
+    public static function getModelPermissions(): array
+    {
+        return self::$permissons;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

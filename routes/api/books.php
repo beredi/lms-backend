@@ -20,6 +20,10 @@ Route::prefix('books')->group(function () {
         Route::post('/borrow', [BorrowController::class, 'borrowBook']);
         Route::post('/return', [BorrowController::class, 'returnBook']);
         Route::get('/return-by-id/{borrowId}', [BorrowController::class, 'returnById']);
+
+        Route::get('/borrows-by-book/{bookId}', [BookController::class, 'getBorrowsByBook']);
+
+        Route::get('/cancel-reservation/{borrowId}', [BorrowController::class, 'destroy']);
     });
 });
 

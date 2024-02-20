@@ -19,6 +19,8 @@ class BorrowController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Borrow::class);
+
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
 
@@ -33,6 +35,9 @@ class BorrowController extends Controller
         return $this->successResponse('Successful request', new BorrowCollection($borrows));
     }
 
+    /**
+     *
+     */
     public function reserveBook(Request $request): JsonResponse
     {
         $bookId = $request->input('book_id');
@@ -62,8 +67,13 @@ class BorrowController extends Controller
         return $this->successResponse('Book reserved successfully', new BorrowResource($reservation), 201);
     }
 
+    /**
+     *
+     */
     public function borrowBook(Request $request): JsonResponse
     {
+        $this->authorize('create', Borrow::class);
+
         $bookId = $request->input('book_id');
         $userId = $request->input('user_id');
 
@@ -78,7 +88,7 @@ class BorrowController extends Controller
             ->whereNull('returned')
             ->first();
 
-        $deadline = now()->addDays(7);
+        $deadline = now()->addMonth();
 
         if ($existingBorrow) {
             if ($existingBorrow->borrowed !== null) {
@@ -105,6 +115,8 @@ class BorrowController extends Controller
 
     public function returnBook(Request $request): JsonResponse
     {
+        $this->authorize('update', Borrow::class);
+
         $bookId = $request->input('book_id');
         $userId = $request->input('user_id');
 
@@ -143,13 +155,24 @@ class BorrowController extends Controller
         return $this->successResponse('Book returned successfully', new BorrowResource($existingBorrow), 200);
     }
 
-    // Other CRUD methods can be added as needed
-
-    // Example store method
-    public function store(Request $request): JsonResponse
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $borrowId)
     {
-        // Your store logic here
+        try {
+            $borrow = Borrow::findOrFail($borrowId);
+            $this->authorize('delete', $borrow);
 
-        return $this->successResponse('Borrow created successfully', new BorrowResource($createdBorrow), 201);
+            if ($borrow->reserved !== null && $borrow->returned === null && $borrow->returned === null) {
+                $borrow->delete();
+            } else {
+                return $this->errorResponse('Book was borrowed or returned', 400);
+            }
+
+            return $this->successResponse('Reservation was successfully canceled', []);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+            return $this->errorResponse('Borrow record not found', 404);
+        }
     }
 }

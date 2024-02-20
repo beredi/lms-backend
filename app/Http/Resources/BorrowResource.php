@@ -22,6 +22,10 @@ class BorrowResource extends JsonResource
             'borrowed' => $this->borrowed,
             'returned' => $this->returned,
             'deadline' => $this->deadline,
+            'ids' => [
+                'user_id' => $this->user_id,
+                'book_id' => $this->book_id
+            ]
         ];
     }
 }

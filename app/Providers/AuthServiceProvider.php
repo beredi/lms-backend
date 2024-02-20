@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Author;
 use App\Models\Book;
+use App\Models\Borrow;
 use App\Models\Category;
 use App\Models\User;
 use App\Policies\AuthorPolicy;
 use App\Policies\BookPolicy;
+use App\Policies\BorrowPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -25,7 +27,8 @@ class AuthServiceProvider extends ServiceProvider
         Book::class => BookPolicy::class,
         Author::class => AuthorPolicy::class,
         User::class => UserPolicy::class,
-        Category::class => CategoryPolicy::class
+        Category::class => CategoryPolicy::class,
+        Borrow::class => BorrowPolicy::class
     ];
 
     /**

@@ -7,4 +7,5 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::resource('users', UserController::class);
     Route::get('auth-user', [UserController::class, 'authUser']);
+    Route::get('users/borrowed-by-user/{userId}', [UserController::class, 'getBorrowsByUser']);
 });
