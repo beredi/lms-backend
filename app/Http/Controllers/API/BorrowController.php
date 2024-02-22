@@ -12,6 +12,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Exports\BorrowsExport;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BorrowController extends Controller
 {
@@ -173,6 +177,31 @@ class BorrowController extends Controller
             return $this->successResponse('Reservation was successfully canceled', []);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Borrow record not found', 404);
+        }
+    }
+
+    /**
+     *
+     */
+    public function exportForUser($userId)
+    {
+        try {
+            $user = User::findOrFail($userId);
+            $borrows = $user->getReturnedBooks();
+            $borrows = $borrows->with(['user', 'book'])->orderBy('returned', 'desc')->get();
+
+            $export = new BorrowsExport($borrows);
+
+            $fileName = 'borrows.xlsx';
+            $filePath = "app/exports/{$fileName}";
+
+            Excel::store($export, "exports/{$fileName}", 'local');
+
+            return response()->download(storage_path($filePath), $fileName)->deleteFileAfterSend();
+        } catch (\Exception $exception) {
+            Log::error($exception);
+
+            return $this->errorResponse('Export failed', 500);
         }
     }
 }
