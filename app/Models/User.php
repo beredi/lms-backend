@@ -11,6 +11,7 @@ use Laravel\Scout\Attributes\SearchUsingPrefix;
 use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Borrow;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -135,5 +136,27 @@ class User extends Authenticatable
     {
         return $this->borrows()
             ->whereNotNull('returned');
+    }
+
+
+    /**
+     * Get payments for the user.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Check if the user has made a payment in the current year.
+     *
+     * @return bool
+     */
+    public function didUserPaid(): bool
+    {
+        $currentYear = Carbon::now()->year;
+
+        // Check if there is any payment made by the user in the current year
+        return $this->payments()->whereYear('payment_date', $currentYear)->exists();
     }
 }

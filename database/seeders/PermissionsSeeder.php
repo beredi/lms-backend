@@ -6,6 +6,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\Borrow;
 use App\Models\Category;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -24,12 +25,13 @@ class PermissionsSeeder extends Seeder
         $bookPermissions = Book::getModelPermissions();
         $categoryPermissions = Category::getModelPermissions();
         $borrowPermissions = Borrow::getModelPermissions();
-        $permissions = array_merge($userPermissions, $authorPermissions, $bookPermissions, $categoryPermissions, $borrowPermissions);
-        foreach ($borrowPermissions as $permission) {
+        $paymentPermissions = Payment::getModelPermissions();
+        $permissions = array_merge($userPermissions, $authorPermissions, $bookPermissions, $categoryPermissions, $borrowPermissions, $paymentPermissions);
+        foreach ($permissions as $permission) {
             Permission::create(['name' => $permission]);
         }
 
-        $employerPermissions = array_merge($userPermissions, $authorPermissions, $bookPermissions, $categoryPermissions, $borrowPermissions);
+        $employerPermissions = array_merge($userPermissions, $authorPermissions, $bookPermissions, $categoryPermissions, $borrowPermissions, $paymentPermissions);
         Role::findByName('employer')->syncPermissions($employerPermissions);
 
         $userPermissions = [

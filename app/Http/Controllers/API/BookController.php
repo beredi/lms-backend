@@ -12,10 +12,8 @@ use App\Http\Resources\BookResource;
 use App\Http\Resources\BorrowCollection;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\Author;
-use App\Models\Borrow;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
