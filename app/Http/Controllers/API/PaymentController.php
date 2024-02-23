@@ -56,8 +56,9 @@ class PaymentController extends Controller
     {
         try {
             $user = User::findOrFail($userId);
+            $perPage = $request->input('per_page', 10);
 
-            $payments = Payment::where('user_id', $user->id)->get();
+            $payments = Payment::where('user_id', $user->id)->paginate($perPage);
 
             return $this->successResponse('Payments retrieved successfully', ['payments' => $payments]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
