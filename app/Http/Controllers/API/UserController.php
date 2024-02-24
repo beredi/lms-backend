@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\BorrowCollection;
 use App\Http\Resources\UserCollection;
+use App\Notifications\RegisterUser;
 use \Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -67,7 +68,7 @@ class UserController extends Controller
         $roles = $request->input('roles', ['user']);
         $user->syncRoles($roles);
 
-
+        $user->notify(new RegisterUser($user));
         return $this->successResponse(
             'User created successfully',
             $user,
