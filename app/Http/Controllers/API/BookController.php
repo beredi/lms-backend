@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Exports\BooksExport;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -14,6 +15,8 @@ use App\Http\Traits\ApiResponseTrait;
 use App\Models\Author;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 
 class BookController extends Controller
 {
@@ -31,17 +34,7 @@ class BookController extends Controller
         $query = Book::query();
 
         if ($available === '1') {
-            $query->where(function ($query) {
-                $query->doesntHave('borrows')
-                    ->orWhereHas('borrows', function ($q) {
-                        $q->where('returned', '!=', null)
-                            ->where('id', function ($subquery) {
-                                $subquery->selectRaw('MAX(id)')
-                                    ->from('borrows')
-                                    ->whereColumn('book_id', 'books.id');
-                            });
-                    });
-            });
+            $query->available();
         }
 
         $query->where(function ($query) use ($search) {
@@ -215,7 +208,7 @@ class BookController extends Controller
     }
 
     /**
-     *
+     * Get all borrows for the book
      */
     public function getBorrowsByBook(Request $request, $bookId): JsonResponse
     {
@@ -242,6 +235,49 @@ class BookController extends Controller
             return $this->successResponse('Successful request', new BorrowCollection($borrows->with(['user', 'book'])->paginate($perPage)));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
             return $this->errorResponse('Borrow record not found', 404);
+        }
+    }
+
+    /**
+     * Private function for exporting books
+     */
+    private function handleExportBooks($books)
+    {
+        $export = new BooksExport($books);
+
+        $fileName = 'books.xlsx';
+        $filePath = "app/exports/{$fileName}";
+
+        Excel::store($export, "exports/{$fileName}", 'local');
+
+        return response()->download(storage_path($filePath), $fileName)->deleteFileAfterSend();
+    }
+
+    /**
+     *  Export all books to .XLS
+     */
+    public function exportBooks(Request $request)
+    {
+        try {
+            $filters = $request->input('filters', []);
+
+            $query = Book::query();
+
+            if (isset($filters['from']) && isset($filters['to'])) {
+                $query->whereBetween('year', [$filters['from'], $filters['to']])
+                    ->orWhereNull('year');
+            }
+
+            if (isset($filters['onlyAvailable']) && $filters['onlyAvailable'] == true) {
+                $query->available();
+            }
+
+            $books = $query->get();
+
+            return $this->handleExportBooks($books);
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            return $this->errorResponse('Export failed', 500);
         }
     }
 }

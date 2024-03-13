@@ -140,9 +140,6 @@ class Book extends Model
     }
 
 
-
-
-
     /**
      * Get only returned records.
      *
@@ -152,5 +149,23 @@ class Book extends Model
     {
         return $this->borrows()
             ->whereNotNull('returned');
+    }
+
+    /**
+     * Get available books
+     */
+    public function scopeAvailable($query)
+    {
+        return $query->where(function ($query) {
+            $query->doesntHave('borrows')
+                ->orWhereHas('borrows', function ($q) {
+                    $q->where('returned', '!=', null)
+                        ->where('id', function ($subquery) {
+                            $subquery->selectRaw('MAX(id)')
+                                ->from('borrows')
+                                ->whereColumn('book_id', 'books.id');
+                        });
+                });
+        });
     }
 }
